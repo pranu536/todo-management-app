@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Environment variables (never commit real Supabase keys)
+.env
+.env.local
+.env.*.local
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# Production build output
+dist/
+frontend/dist/
+
+# Logs and OS files
+npm-debug.log*
+yarn-debug.log*
+.DS_Store
+Thumbs.db
+
+# Local assignment guide PDF (exclude from public submission repo)
+ToDo_App_Build_Guide.pdf
+
