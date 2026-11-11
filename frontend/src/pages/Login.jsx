@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { supabase } from '../lib/supabaseClient';
+import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { validateLogin } from '../utils/validators';
 import Spinner from '../components/Spinner';
@@ -32,6 +32,11 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isSupabaseConfigured) {
+      toast.error('Supabase is not configured. Add keys to frontend/.env');
+      return;
+    }
+
     const v = validateLogin(form);
     setErrors(v);
     if (Object.keys(v).length) return;
@@ -102,7 +107,7 @@ export default function Login() {
           </div>
 
           <button type="submit" className="btn btn-primary btn-block" disabled={submitting}>
-            {submitting ? 'Saving…' : 'Log In'}
+            {submitting ? 'Logging in…' : 'Log In'}
           </button>
         </form>
 

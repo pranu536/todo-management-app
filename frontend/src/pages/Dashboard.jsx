@@ -89,16 +89,27 @@ export default function Dashboard() {
   });
 
   const query = search.trim().toLowerCase();
-  const filteredTasks = tasks.filter((task) => {
-    if (filter === 'pending' && task.is_completed) return false;
-    if (filter === 'completed' && !task.is_completed) return false;
-    if (query) {
-      const inTitle = task.title?.toLowerCase().includes(query);
-      const inDesc = task.description?.toLowerCase().includes(query);
-      if (!inTitle && !inDesc) return false;
-    }
-    return true;
-  });
+
+  // Filter in the UI, then sort: pending first, nearest due dates next, newest created last.
+  const filteredTasks = tasks
+    .filter((task) => {
+      if (filter === 'pending' && task.is_completed) return false;
+      if (filter === 'completed' && !task.is_completed) return false;
+      if (query) {
+        const inTitle = task.title?.toLowerCase().includes(query);
+        const inDesc = task.description?.toLowerCase().includes(query);
+        if (!inTitle && !inDesc) return false;
+      }
+      return true;
+    })
+    .slice()
+    .sort((a, b) => {
+      if (a.is_completed !== b.is_completed) return a.is_completed ? 1 : -1;
+      const aDue = a.due_date || '9999-12-31';
+      const bDue = b.due_date || '9999-12-31';
+      if (aDue !== bDue) return aDue.localeCompare(bDue);
+      return (b.created_at || '').localeCompare(a.created_at || '');
+    });
 
   const focusTaskForm = () => {
     // Brief delay prevents mobile drawer close animation from interfering with focus on iOS/Android
@@ -284,7 +295,12 @@ export default function Dashboard() {
                   <Spinner label="Loading tasks..." />
                 </div>
               ) : tasks.length === 0 ? (
-                <p className="card empty-state">No tasks yet — add your first one!</p>
+                <div className="card empty-state">
+                  <p className="empty-state-text">No tasks yet — add your first one!</p>
+                  <button type="button" className="btn btn-primary btn-sm" onClick={handleNewTask}>
+                    New Task
+                  </button>
+                </div>
               ) : filteredTasks.length === 0 ? (
                 <div className="card empty-state">
                   <p className="empty-state-text">

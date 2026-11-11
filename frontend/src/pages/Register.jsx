@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { supabase } from '../lib/supabaseClient';
+import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { validateRegister } from '../utils/validators';
 import Spinner from '../components/Spinner';
@@ -39,6 +39,11 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isSupabaseConfigured) {
+      toast.error('Supabase is not configured. Add keys to frontend/.env');
+      return;
+    }
+
     const v = validateRegister(form);
     setErrors(v);
     if (Object.keys(v).length) return;
@@ -142,7 +147,7 @@ export default function Register() {
           </div>
 
           <button type="submit" className="btn btn-primary btn-block" disabled={submitting}>
-            {submitting ? 'Saving…' : 'Register'}
+            {submitting ? 'Creating account…' : 'Register'}
           </button>
         </form>
 

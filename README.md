@@ -2,7 +2,7 @@
 
 A responsive task manager built with React (Vite) and Supabase (Auth, PostgreSQL, and Row Level Security).
 
-**Live demo:** https://your-app.vercel.app
+**Live demo:** https://your-app.onrender.com *(replace after Render deploy)*
 
 ## Features
 
@@ -20,7 +20,7 @@ A responsive task manager built with React (Vite) and Supabase (Auth, PostgreSQL
 
 - **Frontend:** React (Vite, JavaScript), `react-router-dom`, `react-hot-toast`, plain mobile-first CSS with CSS variables
 - **Backend & Database:** Supabase (`@supabase/supabase-js`, Auth, Postgres, Row Level Security)
-- **Deployment:** Vercel (`frontend/vercel.json` SPA rewrite)
+- **Deployment:** Render Static Site (`render.yaml` + SPA rewrite)
 
 ## Setup
 
@@ -33,7 +33,7 @@ A responsive task manager built with React (Vite) and Supabase (Auth, PostgreSQL
    ```bash
    npm install
    ```
-3. Create `frontend/.env` (see `backend/.env.example`) with your Supabase credentials:
+3. Create `frontend/.env` (see `frontend/.env.example` or `backend/.env.example`) with your Supabase credentials:
    ```env
    VITE_SUPABASE_URL=https://your-project-id.supabase.co
    VITE_SUPABASE_ANON_KEY=your-anon-key
@@ -45,17 +45,26 @@ A responsive task manager built with React (Vite) and Supabase (Auth, PostgreSQL
    npm run dev
    ```
 
-## Deployment (Vercel)
+## Deployment (Render)
 
 1. Push your repository to GitHub (verify `frontend/.env` is NOT committed).
-2. In Vercel, choose **Add New → Project**, import the repo, and set **Root Directory** to `frontend`.
-3. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` under **Environment Variables**.
-4. Click **Deploy**, then update **Site URL** in **Supabase → Authentication → URL Configuration** to your live Vercel URL.
+2. In [Render](https://render.com), choose **New → Static Site** and connect this GitHub repo.
+3. Use these settings (also defined in `render.yaml`):
+   - **Root Directory:** `frontend`
+   - **Build Command:** `npm install && npm run build`
+   - **Publish Directory:** `dist`
+4. Add Environment Variables:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+5. Deploy, then copy the live Render URL.
+6. In Supabase → **Authentication → URL Configuration**, set **Site URL** (and Redirect URLs) to your Render URL.
+7. SPA refreshes on `/dashboard` are handled by `frontend/public/_redirects` and `render.yaml` rewrite rules.
 
 ## Project Structure
 
 ```text
-todo-app/
+todo-management-app/
+├── render.yaml
 ├── database/
 │   ├── schema.sql
 │   ├── policies.sql
@@ -66,6 +75,8 @@ todo-app/
 │   └── auth-config.md
 ├── frontend/
 │   ├── .env                # local only (ignored by .gitignore)
+│   ├── .env.example
+│   ├── public/_redirects   # Render SPA rewrite
 │   ├── vercel.json
 │   ├── index.html
 │   ├── package.json

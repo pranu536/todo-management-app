@@ -44,7 +44,7 @@ export default function Navbar({ onMenuClick }) {
             <span className="brand-badge brand-badge--sm mobile-only-badge">
               <CheckSquareIcon size={15} />
             </span>
-            <span className="navbar-brand">To-Do Management App</span>
+            <span className="navbar-brand">TaskFlow</span>
           </div>
         </div>
 
@@ -55,7 +55,7 @@ export default function Navbar({ onMenuClick }) {
           disabled={signingOut}
         >
           <LogOutIcon size={16} />
-          <span>{signingOut ? 'Saving…' : 'Logout'}</span>
+          <span>{signingOut ? 'Logging out…' : 'Logout'}</span>
         </button>
       </div>
     </header>

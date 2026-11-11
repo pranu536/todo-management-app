@@ -6,11 +6,17 @@ const supabaseKey =
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-if (!supabaseUrl || !supabaseKey) {
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseKey);
+
+if (!isSupabaseConfigured) {
   console.error(
-    'Missing Supabase environment variables. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (or VITE_SUPABASE_PUBLISHABLE_KEY) in frontend/.env.'
+    'Missing Supabase environment variables. Create frontend/.env with VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (see backend/.env.example).'
   );
 }
 
-// Single shared Supabase instance used across AuthContext and taskService
-export const supabase = createClient(supabaseUrl, supabaseKey);
+// Single shared Supabase instance used across AuthContext and taskService.
+// Placeholder strings keep createClient from throwing when .env is not set yet.
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseKey || 'public-anon-key'
+);

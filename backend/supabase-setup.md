@@ -35,16 +35,19 @@ Run `database/schema.sql` followed by `database/policies.sql` in the Supabase **
 2. Toggle **Confirm email** **OFF** and save.
    *(If left ON, newly registered users cannot log in until they click the confirmation link in their inbox.)*
 
-## 5. Vercel Deployment & Post-Deploy Site URL
+## 5. Render Deployment & Post-Deploy Site URL
 
 1. Push your repository to GitHub (verify `.env` is NOT on GitHub).
-2. In [vercel.com](https://vercel.com), click **Add New** → **Project** and import the repository.
-3. Set **Root Directory** to `frontend` (Vercel detects Vite automatically).
+2. In [render.com](https://render.com), click **New → Static Site** and connect the repository.
+3. Set:
+   - **Root Directory** → `frontend`
+   - **Build Command** → `npm install && npm run build`
+   - **Publish Directory** → `dist`
 4. Under **Environment Variables**, add:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
 5. Click **Deploy**.
-6. After deployment finishes, copy your live Vercel URL (e.g., `https://your-app.vercel.app`).
-7. In Supabase, go to **Authentication** → **URL Configuration** and set **Site URL** to your live Vercel URL.
-8. Verify `frontend/vercel.json` is present so refreshing `/dashboard` rewrites to `/index.html` instead of returning a `404`.
+6. After deployment finishes, copy your live Render URL (e.g., `https://your-app.onrender.com`).
+7. In Supabase, go to **Authentication** → **URL Configuration** and set **Site URL** (plus Redirect URLs) to your live Render URL.
+8. SPA routing is covered by `frontend/public/_redirects` and `render.yaml` so refreshing `/dashboard` does not return a `404`.
 

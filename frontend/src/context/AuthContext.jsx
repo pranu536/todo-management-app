@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 
 const AuthContext = createContext(null);
 
@@ -10,6 +10,13 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let mounted = true;
+
+    // Skip network session restore when env keys are missing so the UI never hangs on a spinner
+    if (!isSupabaseConfigured) {
+      setSession(null);
+      setLoading(false);
+      return undefined;
+    }
 
     // 1. Restore an existing session on page load / refresh from browser storage
     supabase.auth
