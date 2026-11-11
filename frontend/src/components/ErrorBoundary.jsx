@@ -10,6 +10,16 @@ export default class ErrorBoundary extends Component {
     return { hasError: true };
   }
 
+  componentDidCatch(error, info) {
+    if (import.meta.env.DEV) {
+      console.error('ErrorBoundary caught:', error, info);
+    }
+  }
+
+  handleReload = () => {
+    window.location.assign('/');
+  };
+
   render() {
     if (this.state.hasError) {
       return (
@@ -19,11 +29,7 @@ export default class ErrorBoundary extends Component {
             <p className="auth-subtitle">
               An unexpected error occurred while rendering the application.
             </p>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => window.location.reload()}
-            >
+            <button type="button" className="btn btn-primary" onClick={this.handleReload}>
               Reload Page
             </button>
           </section>
@@ -34,4 +40,3 @@ export default class ErrorBoundary extends Component {
     return this.props.children;
   }
 }
-

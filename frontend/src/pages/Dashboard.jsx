@@ -34,34 +34,17 @@ export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const titleInputRef = useRef(null);
 
-  // Fetch once on mount. If the user has no tasks yet, seed 10 demo tasks and keep them in Supabase.
+  // Fetch tasks once when the authenticated user is available.
+  // Sample tasks are opt-in only (button) so production accounts stay empty until the user adds data.
   useEffect(() => {
     let active = true;
 
     (async () => {
       try {
-        let data = (await getTasks()) ?? [];
-
-        // Always seed 10 demo tasks when the account has an empty list.
-        if (active && data.length === 0 && user?.id) {
-          try {
-            data = await createTasks(getSampleTasks());
-            window.localStorage.setItem(`taskflow-seeded-${user.id}`, '1');
-            if (active) toast.success('Added 10 sample tasks for your demo');
-          } catch (seedError) {
-            console.error('Sample task seed failed:', seedError);
-            if (active) {
-              toast.error(
-                seedError?.message ||
-                  'Could not add sample tasks. Click “Load 10 Sample Tasks”.'
-              );
-            }
-          }
-        }
-
+        const data = (await getTasks()) ?? [];
         if (active) setTasks(data);
       } catch (error) {
-        console.error('Load tasks failed:', error);
+        if (import.meta.env.DEV) console.error('Load tasks failed:', error);
         if (active) toast.error(error?.message || 'Could not load tasks');
       } finally {
         if (active) setLoading(false);
@@ -148,12 +131,9 @@ export default function Dashboard() {
     try {
       const created = await createTasks(getSampleTasks());
       setTasks((prev) => [...created, ...prev]);
-      if (user?.id) {
-        window.localStorage.setItem(`taskflow-seeded-${user.id}`, '1');
-      }
       toast.success('Added 10 sample tasks');
-    } catch {
-      toast.error('Could not add sample tasks');
+    } catch (error) {
+      toast.error(error?.message || 'Could not add sample tasks');
     }
   };
 

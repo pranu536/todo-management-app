@@ -55,7 +55,7 @@ A responsive task manager built with React (Vite) and Supabase (Auth, PostgreSQL
    - **Publish Directory:** `dist`
 4. Add Environment Variables:
    - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
+   - `VITE_SUPABASE_ANON_KEY` (or `VITE_SUPABASE_PUBLISHABLE_KEY`)
 5. Deploy, then copy the live Render URL.
 6. In Supabase → **Authentication → URL Configuration**, set **Site URL** (and Redirect URLs) to your Render URL.
 7. SPA refreshes on `/dashboard` are handled by `frontend/public/_redirects` and `render.yaml` rewrite rules.
