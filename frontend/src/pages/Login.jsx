@@ -49,14 +49,19 @@ export default function Login() {
       });
 
       if (error) {
-        toast.error('Invalid email or password');
+        toast.error(error.message || 'Invalid email or password');
         return;
       }
 
       toast.success('Welcome back!');
       navigate('/dashboard');
-    } catch {
-      toast.error('Unable to reach server. Please try again.');
+    } catch (err) {
+      const message = String(err?.message || err || '');
+      if (/quic|failed to fetch|network|load failed/i.test(message)) {
+        toast.error('Network error reaching Supabase. Retry, or try Safari / disable Chrome QUIC.');
+      } else {
+        toast.error('Unable to reach server. Please try again.');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -69,13 +74,16 @@ export default function Login() {
           <span className="brand-badge">
             <CheckSquareIcon size={18} />
           </span>
-          <span className="brand-name">TaskFlow</span>
+          <div>
+            <span className="brand-name">TaskFlow</span>
+            <span className="brand-tag">To-Do Management</span>
+          </div>
         </div>
 
         <h1 id="login-heading" className="auth-title">
-          Welcome Back
+          Welcome back
         </h1>
-        <p className="auth-subtitle">Log in to manage your tasks and stay on track.</p>
+        <p className="auth-subtitle">Sign in to continue organizing your tasks.</p>
 
         <form onSubmit={handleSubmit} className="form-stack" noValidate>
           <div className="form-group">
@@ -112,7 +120,7 @@ export default function Login() {
         </form>
 
         <p className="auth-footer">
-          Don&apos;t have an account? <Link to="/register">Register</Link>
+          Don&apos;t have an account? <Link to="/register">Create one</Link>
         </p>
       </section>
     </main>

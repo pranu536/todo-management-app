@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import {
   createTask,
+  createTasks,
   deleteTask,
   getTasks,
   setCompleted,
@@ -21,6 +22,7 @@ import {
   SearchIcon,
   XIcon,
 } from '../components/Icons';
+import { getSampleTasks } from '../utils/sampleTasks';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -32,26 +34,44 @@ export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const titleInputRef = useRef(null);
 
-  // Why empty dependency array []? Fetch tasks once on mount, then update local state
-  // after every create/update/toggle/delete instead of making extra round-trip queries.
+  // Fetch once on mount. If the user has no tasks yet, seed 10 demo tasks and keep them in Supabase.
   useEffect(() => {
     let active = true;
 
-    getTasks()
-      .then((data) => {
-        if (active) setTasks(data ?? []);
-      })
-      .catch(() => {
-        if (active) toast.error('Could not load tasks');
-      })
-      .finally(() => {
+    (async () => {
+      try {
+        let data = (await getTasks()) ?? [];
+
+        // Always seed 10 demo tasks when the account has an empty list.
+        if (active && data.length === 0 && user?.id) {
+          try {
+            data = await createTasks(getSampleTasks());
+            window.localStorage.setItem(`taskflow-seeded-${user.id}`, '1');
+            if (active) toast.success('Added 10 sample tasks for your demo');
+          } catch (seedError) {
+            console.error('Sample task seed failed:', seedError);
+            if (active) {
+              toast.error(
+                seedError?.message ||
+                  'Could not add sample tasks. Click “Load 10 Sample Tasks”.'
+              );
+            }
+          }
+        }
+
+        if (active) setTasks(data);
+      } catch (error) {
+        console.error('Load tasks failed:', error);
+        if (active) toast.error(error?.message || 'Could not load tasks');
+      } finally {
         if (active) setLoading(false);
-      });
+      }
+    })();
 
     return () => {
       active = false;
     };
-  }, []);
+  }, [user?.id]);
 
   // Lock background scroll and listen for Escape when the mobile drawer is open
   useEffect(() => {
@@ -122,6 +142,19 @@ export default function Dashboard() {
   const handleNewTask = () => {
     setEditingTask(null);
     focusTaskForm();
+  };
+
+  const handleLoadSampleTasks = async () => {
+    try {
+      const created = await createTasks(getSampleTasks());
+      setTasks((prev) => [...created, ...prev]);
+      if (user?.id) {
+        window.localStorage.setItem(`taskflow-seeded-${user.id}`, '1');
+      }
+      toast.success('Added 10 sample tasks');
+    } catch {
+      toast.error('Could not add sample tasks');
+    }
   };
 
   const handleEditStart = (task) => {
@@ -195,8 +228,8 @@ export default function Dashboard() {
         <main className="dashboard-main">
           <section className="card welcome-banner" aria-label="Dashboard header">
             <div className="welcome-copy">
-              <span className="welcome-eyebrow">Dashboard Overview</span>
-              <h1 className="welcome-title">Welcome, {name}!</h1>
+              <span className="welcome-eyebrow">Your workspace</span>
+              <h1 className="welcome-title">Welcome, {name}</h1>
               <p className="welcome-date">{todayLabel}</p>
             </div>
             <div className="progress-summary">
@@ -242,9 +275,21 @@ export default function Dashboard() {
             <section className="task-list-section" aria-labelledby="task-list-heading">
               <div className="card toolbar-card">
                 <div className="toolbar-top">
-                  <h2 id="task-list-heading" className="section-title">
-                    Your Tasks
-                  </h2>
+                  <div>
+                    <h2 id="task-list-heading" className="section-title">
+                      Your Tasks
+                    </h2>
+                    {tasks.length < 10 && (
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        style={{ marginTop: 8 }}
+                        onClick={handleLoadSampleTasks}
+                      >
+                        Load 10 Sample Tasks
+                      </button>
+                    )}
+                  </div>
                   <div className="filter-tabs" role="tablist" aria-label="Filter tasks">
                     {filterTabs.map((tab) => (
                       <button
@@ -297,9 +342,18 @@ export default function Dashboard() {
               ) : tasks.length === 0 ? (
                 <div className="card empty-state">
                   <p className="empty-state-text">No tasks yet — add your first one!</p>
-                  <button type="button" className="btn btn-primary btn-sm" onClick={handleNewTask}>
-                    New Task
-                  </button>
+                  <div className="form-actions" style={{ justifyContent: 'center' }}>
+                    <button type="button" className="btn btn-primary btn-sm" onClick={handleNewTask}>
+                      New Task
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={handleLoadSampleTasks}
+                    >
+                      Load 10 Sample Tasks
+                    </button>
+                  </div>
                 </div>
               ) : filteredTasks.length === 0 ? (
                 <div className="card empty-state">

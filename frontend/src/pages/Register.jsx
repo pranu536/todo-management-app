@@ -51,14 +51,22 @@ export default function Register() {
     isRegistering.current = true;
     setSubmitting(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: form.email.trim(),
         password: form.password,
         options: { data: { name: form.name.trim() } }, // stored in user_metadata
       });
 
       if (error) {
-        toast.error(error.message);
+        // Surface the real Auth API message (rate limit, weak password, duplicate email, etc.)
+        toast.error(error.message || 'Registration failed');
+        return;
+      }
+
+      // If Confirm email is ON, Supabase may return a user with no session until inbox confirmation
+      if (data?.user && !data.session) {
+        toast.success('Check your email to confirm your account, then log in.');
+        navigate('/login');
         return;
       }
 
@@ -66,8 +74,13 @@ export default function Register() {
       await supabase.auth.signOut();
       toast.success('Registration successful! Please log in.');
       navigate('/login');
-    } catch {
-      toast.error('Unable to reach server. Please try again.');
+    } catch (err) {
+      const message = String(err?.message || err || '');
+      if (/quic|failed to fetch|network|load failed/i.test(message)) {
+        toast.error('Network error reaching Supabase. Retry, or try Safari / disable Chrome QUIC.');
+      } else {
+        toast.error('Unable to reach server. Please try again.');
+      }
     } finally {
       isRegistering.current = false;
       setSubmitting(false);
@@ -81,13 +94,16 @@ export default function Register() {
           <span className="brand-badge">
             <CheckSquareIcon size={18} />
           </span>
-          <span className="brand-name">TaskFlow</span>
+          <div>
+            <span className="brand-name">TaskFlow</span>
+            <span className="brand-tag">To-Do Management</span>
+          </div>
         </div>
 
         <h1 id="register-heading" className="auth-title">
-          Create Account
+          Create your account
         </h1>
-        <p className="auth-subtitle">Sign up to start organizing your daily tasks.</p>
+        <p className="auth-subtitle">Start organizing tasks with a clean, focused workspace.</p>
 
         <form onSubmit={handleSubmit} className="form-stack" noValidate>
           <div className="form-group">

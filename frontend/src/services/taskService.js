@@ -13,15 +13,21 @@ export async function getTasks() {
   return data;
 }
 
-export async function createTask({ title, description, due_date }) {
+export async function createTask({ title, description, due_date, is_completed = false }) {
   // Why omit user_id? The column defaults to auth.uid() in Postgres so the frontend never sends it.
   const { data, error } = await supabase
     .from('tasks')
-    .insert({ title, description, due_date })
+    .insert({ title, description, due_date, is_completed })
     .select()
     .single();
   if (error) throw error;
   return data;
+}
+
+export async function createTasks(tasks) {
+  const { data, error } = await supabase.from('tasks').insert(tasks).select();
+  if (error) throw error;
+  return data ?? [];
 }
 
 export async function updateTask(id, updates) {
